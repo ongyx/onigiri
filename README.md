@@ -21,6 +21,6 @@ Hajime Hoshi for creating Ebiten.
 
 ## License
 
-Bento is licensed under the MIT License.
+Onigiri is licensed under the MIT License.
 
 [Ebitengine]: https://github.com/hajimehoshi/ebiten
