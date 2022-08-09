@@ -1,16 +1,17 @@
 package onigiri
 
-type Signature uint64
+// Signature is a bitset with a fixed size of 64.
+type Signature uint8
 
-func (s *Signature) Test(n uint64) bool {
+func (s *Signature) Test(n uint8) bool {
 	return (*s & (1 << n)) == 1
 }
 
-func (s *Signature) Set(n uint64) {
+func (s *Signature) Set(n uint8) {
 	*s |= (1 << n)
 }
 
-func (s *Signature) Clear(n uint64) {
+func (s *Signature) Clear(n uint8) {
 	*s &^= (1 << n)
 }
 

@@ -9,22 +9,29 @@ import (
 
 const maxTables = 64
 
+type entry struct {
+	table
+	id uint8
+}
+
 // World is the container of all data related to entities, components and systems.
 type World struct {
-	tables  map[reflect.Type]table
-	tableID uint64
+	tables  map[reflect.Type]entry
+	tableID uint8
 
 	entities map[Entity]*Signature
 	entityID uint64
 
 	systems   []System
 	renderers []Renderer
+
+	init bool
 }
 
 // NewWorld creates a new world with an inital capacity of (size) entities.
 func NewWorld(size int) *World {
 	return &World{
-		tables:   make(map[reflect.Type]table, maxTables),
+		tables:   make(map[reflect.Type]entry, maxTables),
 		entities: make(map[Entity]*Signature, size),
 	}
 }
@@ -65,10 +72,17 @@ func (w *World) Register(systems ...System) {
 // This implements the ebiten.Game interface.
 func (w *World) Update() error {
 	for _, s := range w.systems {
+		if !w.init {
+			s.Init(w)
+		}
+
 		if err := s.Update(w); err != nil {
 			return err
 		}
 	}
+
+	// all systems initalised by this point
+	w.init = true
 
 	return nil
 }

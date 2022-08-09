@@ -20,8 +20,13 @@ func NewTable[T any](size int) *Table[T] {
 }
 
 // Get returns a reference to the component indexed by the entity.
+// If the entity is not in the table, nil is returned.
 func (t *Table[T]) Get(e Entity) *T {
-	return &t.components[t.entities[e]]
+	if idx, ok := t.entities[e]; ok {
+		return &t.components[idx]
+	} else {
+		return nil
+	}
 }
 
 // Set inserts a entity-component pair.

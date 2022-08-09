@@ -4,53 +4,72 @@ import "reflect"
 
 // ComponentKind represents a specific kind of component in a world.
 type ComponentKind interface {
-	kind() uint64
+	kind() uint8
 }
 
 // Component is a unique identifer for a component type.
 type Component[T any] struct {
-	w  *World
-	id uint64
-	t  *Table[T]
+	rtype reflect.Type
+
+	world *World
+	table *Table[T]
+	id    uint8
 }
 
+// NewComponent creates a new component associated with a world.
 func NewComponent[T any](w *World) *Component[T] {
-	if w.tableID >= 64 {
-		panic("component: too many registered")
+	c := &Component[T]{rtype: typeof[T](), world: w}
+
+	if e, ok := w.tables[c.rtype]; ok {
+		c.table = e.table.(*Table[T])
+		c.id = e.id
 	}
 
-	rt := typeof[T]()
-	if _, ok := w.tables[rt]; ok {
+	return c
+}
+
+// Register allocates a table with capacity for (size) components in the world.
+// Subsequent calls to Register will panic if it was already called once,
+// or there are too many component types registered.
+func (c *Component[T]) Register(size int) {
+	if c.table != nil {
 		panic("component: type already registered")
 	}
 
-	id := w.tableID
-	w.tableID++
+	if c.world.tableID >= 64 {
+		panic("component: too many registered")
+	}
 
-	t := NewTable[T](256)
-	w.tables[rt] = t
+	c.world.tableID++
+	c.id = c.world.tableID
 
-	return &Component[T]{w, id, t}
+	c.table = NewTable[T](size)
+	c.world.tables[c.rtype] = entry{c.table, c.id}
 }
 
+// Get gets the component associated with the entity.
 func (c *Component[T]) Get(e Entity) *T {
-	return c.t.Get(e)
+	return c.table.Get(e)
 }
 
+// Set adds the component to the entity.
 func (c *Component[T]) Set(e Entity, com T) {
-	c.t.Set(e, com)
-	c.w.entities[e].Set(c.id)
+	c.table.Set(e, com)
+	c.world.entities[e].Set(c.id)
 }
 
+// Delete removes the component from the entity.
 func (c *Component[T]) Delete(e Entity) {
-	c.t.Delete(e)
-	c.w.entities[e].Clear(c.id)
+	c.table.Delete(e)
+	c.world.entities[e].Clear(c.id)
 }
 
-func (c *Component[T]) kind() uint64 {
+// kind returns the kind of component (internal world ID)
+func (c *Component[T]) kind() uint8 {
 	return c.id
 }
 
+// typeof returns the reflected type from a generic type.
 func typeof[T any]() reflect.Type {
 	var v T
 	return reflect.TypeOf(v)
