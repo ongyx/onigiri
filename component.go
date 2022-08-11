@@ -9,42 +9,17 @@ type ComponentKind interface {
 
 // Component is a unique identifer for a component type.
 type Component[T any] struct {
-	rtype reflect.Type
-
 	world *World
 	table *Table[T]
 	id    uint8
 }
 
-// NewComponent creates a new component associated with a world.
-func NewComponent[T any](w *World) *Component[T] {
-	c := &Component[T]{rtype: typeof[T](), world: w}
-
-	if e, ok := w.tables[c.rtype]; ok {
-		c.table = e.table.(*Table[T])
-		c.id = e.id
+func newComponent[T any](w *World, e entry) *Component[T] {
+	return &Component[T]{
+		world: w,
+		table: e.table.(*Table[T]),
+		id:    e.id,
 	}
-
-	return c
-}
-
-// Register allocates a table with capacity for (size) components in the world.
-// Subsequent calls to Register will panic if it was already called once,
-// or there are too many component types registered.
-func (c *Component[T]) Register(size int) {
-	if c.table != nil {
-		panic("component: type already registered")
-	}
-
-	if c.world.tableID >= 64 {
-		panic("component: too many registered")
-	}
-
-	c.world.tableID++
-	c.id = c.world.tableID
-
-	c.table = NewTable[T](size)
-	c.world.tables[c.rtype] = entry{c.table, c.id}
 }
 
 // Get gets the component associated with the entity.
