@@ -6,17 +6,15 @@ import (
 )
 
 func TestWorldUpdate(t *testing.T) {
-	g := NewGame(&UpdateScene{}, nil)
+	w := UpdateScene()
 
 	for i := 0; i < 5; i++ {
-		g.Update()
+		w.Update()
 	}
 }
 
-// components
 type Text string
 
-// systems
 type PrintSystem struct {
 	view *View
 }
@@ -37,21 +35,14 @@ func (ps *PrintSystem) Update(w *World) error {
 	return nil
 }
 
-// scenes
-type UpdateScene struct{}
+func UpdateScene() *World {
+	w := NewWorld(1)
 
-func (us *UpdateScene) Setup() *World {
-	// create world
-	w := NewWorld(16)
+	text := Register[Text](w, 1)
 
-	// register components
-	text := Register[Text](w, 16)
-
-	// add components to entities
 	e := w.Spawn()
 	text.Set(e, Text("Hello World!"))
 
-	// add systems
 	w.Register(&PrintSystem{})
 
 	return w
