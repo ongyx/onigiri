@@ -1,3 +1,7 @@
+# DEPRECIATED
+
+Onigiri has been merged into [Bento] under the `ecs/` folder.
+
 # Onigiri
 
 Experimental ECS (Entity Component System) framework for [Ebitengine].
@@ -23,4 +27,5 @@ Hajime Hoshi for creating Ebiten.
 
 Onigiri is licensed under the MIT License.
 
+[Bento]: https://github.com/ongyx/bento
 [Ebitengine]: https://github.com/hajimehoshi/ebiten
